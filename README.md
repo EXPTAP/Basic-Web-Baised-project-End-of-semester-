@@ -3,7 +3,7 @@ A recipie finder website to make it easier to find delicious meals
 What's included:
 Main Page
 
-Search bar — searches by ingredient, title, or tag (try "garlic", "lemon", "chicken")
+Search bar — searches by ingredient, title, or tag
 Quick-tag chips one-click searches for popular ingredients
 Category pills browse by Breakfast, Lunch, Dinner, Dessert, Snacks, Soups
 Filter dropdowns filter by diet (Vegetarian / Vegan / Gluten-Free), cook time, and difficulty
