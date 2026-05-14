@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flavor Lab – Recipe Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF6EF;
+    --warm-white: #FDF9F4;
+    --ink: #1A1209;
+    --bark: #3D2B1F;
+    --rust: #C4622D;
+    --saffron: #E8A030;
+    --sage: #6B8C6B;
+    --terra: #A0522D;
+    --mist: #E8E0D5;
+    --card-bg: #FFFCF7;
+    --shadow: rgba(26, 18, 9, 0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── PAGE SYSTEM ── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,246,239,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--mist);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 900;
+    color: var(--rust); cursor: pointer;
+    letter-spacing: -0.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo span { color: var(--ink); }
+  .nav-links { display: flex; gap: 0.25rem; }
+  .nav-chip {
+    font-size: 0.8rem; font-weight: 500;
+    padding: 6px 14px; border-radius: 20px;
+    border: none; background: transparent;
+    color: var(--bark); cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-chip:hover { background: var(--mist); }
+  .nav-chip.active { background: var(--rust); color: #fff; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(232,160,48,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--rust);
+    border: 1px solid var(--rust); border-radius: 20px;
+    padding: 4px 14px; margin-bottom: 1.25rem;
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 900; line-height: 1.05;
+    color: var(--ink); margin-bottom: 1rem;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 em { color: var(--rust); font-style: italic; }
+  .hero p {
+    font-size: 1.05rem; color: var(--bark); max-width: 480px;
+    margin: 0 auto 2.5rem;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  /* ── SEARCH BAR ── */
+  .search-wrap {
+    max-width: 640px; margin: 0 auto;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .search-box {
+    display: flex; align-items: center;
+    background: var(--card-bg);
+    border: 2px solid var(--mist);
+    border-radius: 50px;
+    padding: 6px 6px 6px 24px;
+    box-shadow: 0 8px 32px var(--shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-box:focus-within {
+    border-color: var(--rust);
+    box-shadow: 0 8px 32px rgba(196,98,45,0.15);
+  }
+  .search-box input {
+    flex: 1; border: none; background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; color: var(--ink);
+    outline: none;
+  }
+  .search-box input::placeholder { color: #B0A090; }
+  .search-btn {
+    background: var(--rust); color: #fff;
+    border: none; border-radius: 40px;
+    padding: 12px 28px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .search-btn:hover { background: var(--bark); }
+  .search-btn:active { transform: scale(0.97); }
+
+  /* Tag chips below search */
+  .quick-tags {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; margin-top: 1rem;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .tag-chip {
+    font-size: 0.8rem; padding: 5px 14px;
+    border-radius: 20px; border: 1px solid var(--mist);
+    background: var(--card-bg); color: var(--bark);
+    cursor: pointer; transition: all 0.18s;
+  }
+  .tag-chip:hover, .tag-chip.selected {
+    background: var(--rust); color: #fff; border-color: var(--rust);
+  }
+
+  /* ── FILTERS BAR ── */
+  .filters-bar {
+    max-width: 1100px; margin: 2rem auto 0;
+    padding: 0 2rem;
+    display: flex; flex-wrap: wrap; gap: 12px;
+    align-items: center;
+  }
+  .filter-label { font-size: 0.8rem; font-weight: 600; color: var(--bark); text-transform: uppercase; letter-spacing: 1px; }
+  .filter-select {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; color: var(--bark);
+    background: var(--card-bg); border: 1px solid var(--mist);
+    border-radius: 8px; padding: 7px 14px;
+    cursor: pointer; outline: none;
+    transition: border-color 0.2s;
+  }
+  .filter-select:focus { border-color: var(--rust); }
+  .results-count { margin-left: auto; font-size: 0.85rem; color: #998877; }
+
+  /* ── RECIPE GRID ── */
+  .grid-section { max-width: 1100px; margin: 2rem auto; padding: 0 2rem 4rem; }
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; font-weight: 700;
+    margin-bottom: 1.5rem; color: var(--ink);
+  }
+  .recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+  .recipe-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--mist);
+    box-shadow: 0 4px 16px var(--shadow);
+    cursor: pointer;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    animation: fadeUp 0.5s ease both;
+  }
+  .recipe-card:hover { transform: translateY(-6px); box-shadow: 0 12px 36px rgba(26,18,9,0.16); }
+  .card-img {
+    width: 100%; height: 200px; object-fit: cover;
+    display: block; background: var(--mist);
+    font-size: 5rem; display: flex; align-items: center; justify-content: center;
+    color: rgba(0,0,0,0.15);
+  }
+  .card-body { padding: 1.1rem 1.25rem 1.25rem; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.6rem; }
+  .card-tag {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 3px 9px; border-radius: 10px; background: var(--mist); color: var(--bark);
+  }
+  .card-tag.veg { background: #D9EDDA; color: #2D6B30; }
+  .card-tag.spicy { background: #FDEBD0; color: #C4622D; }
+  .card-tag.quick { background: #D6EAF8; color: #1A5276; }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 0.4rem; line-height: 1.3;
+  }
+  .card-desc { font-size: 0.83rem; color: #7A6A5A; line-height: 1.5; margin-bottom: 0.8rem; }
+  .card-meta {
+    display: flex; gap: 1rem; font-size: 0.78rem;
+    color: #998877; align-items: center;
+  }
+  .card-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* ── NO RESULTS ── */
+  .no-results {
+    text-align: center; padding: 4rem 2rem;
+    color: var(--bark);
+  }
+  .no-results .emoji { font-size: 3rem; margin-bottom: 1rem; }
+  .no-results h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
+
+  /* ── RECIPE DETAIL PAGE ── */
+  .detail-page { background: var(--warm-white); }
+  .detail-hero {
+    position: relative;
+    background: var(--bark);
+    min-height: 340px;
+    display: flex; align-items: flex-end;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  .detail-emoji-bg {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 10rem; opacity: 0.18; pointer-events: none;
+    user-select: none;
+  }
+  .detail-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,18,9,0.7) 0%, transparent 60%);
+  }
+  .detail-header { position: relative; z-index: 2; max-width: 800px; }
+  .back-btn {
+    position: absolute; top: 1.25rem; left: 1.5rem; z-index: 10;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.85rem; font-weight: 600; color: rgba(255,255,255,0.85);
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 6px 16px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .back-btn:hover { background: rgba(255,255,255,0.25); }
+  .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .detail-tag {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 4px 12px; border-radius: 12px;
+    background: rgba(255,255,255,0.18); color: #fff;
+    backdrop-filter: blur(4px);
+  }
+  .detail-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900; color: #fff; line-height: 1.1;
+    margin-bottom: 0.5rem;
+  }
+  .detail-meta-row {
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.85rem; color: rgba(255,255,255,0.8);
+  }
+  .detail-meta-row span { display: flex; align-items: center; gap: 5px; }
+
+  /* Detail body */
+  .detail-body { max-width: 860px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+  .detail-desc {
+    font-size: 1.05rem; color: var(--bark);
+    line-height: 1.75; margin-bottom: 2.5rem;
+    border-left: 3px solid var(--rust);
+    padding-left: 1.2rem;
+  }
+  .detail-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 2.5rem; }
+  @media (max-width: 680px) { .detail-grid { grid-template-columns: 1fr; } }
+
+  .detail-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem; font-weight: 700;
+    color: var(--ink); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .detail-section-title::after {
+    content: ''; flex: 1; height: 1px; background: var(--mist);
+  }
+
+  /* Ingredients */
+  .ingredients-list { list-style: none; }
+  .ingredients-list li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--mist);
+    font-size: 0.9rem; color: var(--bark);
+  }
+  .ingredients-list li:last-child { border-bottom: none; }
+  .ing-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--rust); flex-shrink: 0;
+  }
+  .ing-amount { font-weight: 600; color: var(--ink); }
+
+  /* Steps */
+  .steps-list { list-style: none; counter-reset: step-counter; }
+  .step-item {
+    counter-increment: step-counter;
+    display: flex; gap: 1rem;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.4s ease both;
+  }
+  .step-num {
+    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--rust); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.9rem;
+    margin-top: 2px;
+  }
+  .step-text { font-size: 0.9rem; color: var(--bark); line-height: 1.7; padding-top: 6px; }
+
+  /* Nutrition */
+  .nutrition-strip {
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    margin-top: 2.5rem; padding: 1.5rem;
+    background: var(--card-bg); border-radius: 14px;
+    border: 1px solid var(--mist);
+  }
+  .nut-item { text-align: center; flex: 1; min-width: 80px; }
+  .nut-val { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--rust); }
+  .nut-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: #998877; margin-top: 2px; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 4px; }
+
+  /* ── CATEGORY BROWSE ── */
+  .cats-section { max-width: 1100px; margin: 0 auto 2rem; padding: 0 2rem; }
+  .cats-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+  .cats-scroll::-webkit-scrollbar { display: none; }
+  .cat-pill {
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 30px;
+    border: 1.5px solid var(--mist);
+    background: var(--card-bg); cursor: pointer;
+    font-size: 0.85rem; font-weight: 500; color: var(--bark);
+    transition: all 0.18s;
+  }
+  .cat-pill:hover, .cat-pill.active {
+    background: var(--rust); color: #fff; border-color: var(--rust);
+  }
+  .cat-pill .cat-icon { font-size: 1.1rem; }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .recipe-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════ NAV ════════════════ -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">🍳 Flavor<span>Lab</span></div>
+  <div class="nav-links">
+    <button class="nav-chip active" id="nav-home" onclick="showPage('home')">Discover</button>
+    <button class="nav-chip" id="nav-saved" onclick="showSaved()">Saved ♥</button>
+  </div>
+</nav>
+
+<!-- ════════════════ HOME PAGE ════════════════ -->
+<div id="page-home" class="page active">
+
+  <!-- Hero + Search -->
+  <section class="hero">
+    <div class="hero-eyebrow">What's in your kitchen?</div>
+    <h1>Find recipes by<br><em>ingredients</em> you have</h1>
+    <p>Type any ingredient — garlic, chicken, lemon — and discover what you can make right now.</p>
+    <div class="search-wrap">
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="e.g. chicken, garlic, lemon…" oninput="handleSearch()" onkeydown="if(event.key==='Enter')handleSearch()">
+        <button class="search-btn" onclick="handleSearch()">Search</button>
+      </div>
+      <div class="quick-tags" id="quickTags">
+        <span class="tag-chip" onclick="quickSearch(this,'chicken')">🍗 Chicken</span>
+        <span class="tag-chip" onclick="quickSearch(this,'pasta')">🍝 Pasta</span>
+        <span class="tag-chip" onclick="quickSearch(this,'vegetarian')">🥗 Vegetarian</span>
+        <span class="tag-chip" onclick="quickSearch(this,'egg')">🥚 Eggs</span>
+        <span class="tag-chip" onclick="quickSearch(this,'rice')">🍚 Rice</span>
+        <span class="tag-chip" onclick="quickSearch(this,'salmon')">🐟 Salmon</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <div class="cats-section">
+    <div class="cats-scroll" id="catPills">
+      <div class="cat-pill active" onclick="filterCat(this,'all')"><span class="cat-icon">🍽️</span> All</div>
+      <div class="cat-pill" onclick="filterCat(this,'breakfast')"><span class="cat-icon">☀️</span> Breakfast</div>
+      <div class="cat-pill" onclick="filterCat(this,'lunch')"><span class="cat-icon">🥙</span> Lunch</div>
+      <div class="cat-pill" onclick="filterCat(this,'dinner')"><span class="cat-icon">🌙</span> Dinner</div>
+      <div class="cat-pill" onclick="filterCat(this,'dessert')"><span class="cat-icon">🍰</span> Dessert</div>
+      <div class="cat-pill" onclick="filterCat(this,'snack')"><span class="cat-icon">🥨</span> Snacks</div>
+      <div class="cat-pill" onclick="filterCat(this,'soup')"><span class="cat-icon">🍜</span> Soups</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar">
+    <span class="filter-label">Filter:</span>
+    <select class="filter-select" id="dietFilter" onchange="applyFilters()">
+      <option value="">Any Diet</option>
+      <option value="vegetarian">Vegetarian</option>
+      <option value="vegan">Vegan</option>
+      <option value="gluten-free">Gluten-Free</option>
+    </select>
+    <select class="filter-select" id="timeFilter" onchange="applyFilters()">
+      <option value="">Any Time</option>
+      <option value="15">≤ 15 min</option>
+      <option value="30">≤ 30 min</option>
+      <option value="60">≤ 1 hour</option>
+    </select>
+    <select class="filter-select" id="diffFilter" onchange="applyFilters()">
+      <option value="">Any Difficulty</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <span class="results-count" id="resultsCount"></span>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-section">
+    <div class="section-heading" id="sectionHeading">Featured Recipes</div>
+    <div class="recipe-grid" id="recipeGrid"></div>
+    <div id="noResults" class="no-results" style="display:none">
+      <div class="emoji">🔍</div>
+      <h3>No recipes found</h3>
+      <p>Try different ingredients or adjust your filters</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ DETAIL PAGE ════════════════ -->
+<div id="page-detail" class="page detail-page">
+  <div class="detail-hero" id="detailHero">
+    <button class="back-btn" onclick="showPage('home')">← Back</button>
+    <div class="detail-emoji-bg" id="detailEmojiBg"></div>
+    <div class="detail-overlay"></div>
+    <div class="detail-header">
+      <div class="detail-tags" id="detailTags"></div>
+      <div class="detail-title" id="detailTitle"></div>
+      <div class="detail-meta-row" id="detailMeta"></div>
+    </div>
+  </div>
+  <div class="detail-body">
+    <p class="detail-desc" id="detailDesc"></p>
+    <div class="detail-grid">
+      <div>
+        <div class="detail-section-title">Ingredients</div>
+        <ul class="ingredients-list" id="detailIngredients"></ul>
+      </div>
+      <div>
+        <div class="detail-section-title">Instructions</div>
+        <ol class="steps-list" id="detailSteps"></ol>
+      </div>
+    </div>
+    <div class="nutrition-strip" id="detailNutrition"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const RECIPES = [
+  {
+    id: 1, emoji: '🍋', title: 'Lemon Herb Roast Chicken',
+    desc: 'Juicy whole chicken roasted with lemon, garlic, and fresh herbs. A timeless Sunday classic.',
+    tags: ['dinner','high-protein'], diet: [], time: 90, difficulty: 'medium',
+    ingredients: ['chicken','lemon','garlic'],
+    ingredientList: [
+      { amount: '1 whole', name: 'Chicken (1.5 kg)' },
+      { amount: '2', name: 'Lemons' },
+      { amount: '6 cloves', name: 'Garlic' },
+      { amount: '3 tbsp', name: 'Olive oil' },
+      { amount: '1 tbsp', name: 'Fresh rosemary' },
+      { amount: '1 tbsp', name: 'Fresh thyme' },
+      { amount: 'to taste', name: 'Salt & black pepper' },
+    ],
+    steps: [
+      'Preheat oven to 200°C (390°F). Pat the chicken dry with paper towels.',
+      'Mix olive oil, zest of 1 lemon, minced garlic, rosemary, thyme, salt, and pepper into a paste.',
+      'Rub the paste all over and under the skin of the chicken.',
+      'Cut remaining lemon in half and place inside the cavity.',
+      'Roast for 20 min per 500g plus 20 extra minutes, basting halfway through.',
+      'Rest for 15 minutes before carving. Serve with roasting juices.',
+    ],
+    nutrition: { kcal: 380, protein: '42g', carbs: '3g', fat: '22g' },
+    rating: '4.8', reviews: 312, category: 'dinner',
+  },
+  {
+    id: 2, emoji: '🥚', title: 'Fluffy Shakshuka',
+    desc: 'Eggs poached in a spiced tomato and pepper sauce — perfect for any time of day.',
+    tags: ['breakfast','vegetarian','spicy'], diet: ['vegetarian'], time: 25, difficulty: 'easy',
+    ingredients: ['egg','tomato','onion','pepper'],
+    ingredientList: [
+      { amount: '4 large', name: 'Eggs' },
+      { amount: '400g', name: 'Crushed tomatoes' },
+      { amount: '1', name: 'Red bell pepper' },
+      { amount: '1', name: 'Onion' },
+      { amount: '3 cloves', name: 'Garlic' },
+      { amount: '1 tsp', name: 'Cumin' },
+      { amount: '1 tsp', name: 'Paprika' },
+      { amount: 'handful', name: 'Fresh parsley' },
+    ],
+    steps: [
+      'Heat olive oil in a large skillet over medium heat. Sauté diced onion and pepper until soft, about 7 min.',
+      'Add garlic, cumin, and paprika; cook 1 minute until fragrant.',
+      'Pour in crushed tomatoes. Season well. Simmer 10 minutes, stirring occasionally.',
+      'Make 4 wells in the sauce and crack an egg into each.',
+      'Cover and cook 5–7 minutes until whites are set but yolks are still runny.',
+      'Garnish with fresh parsley and serve straight from the pan with crusty bread.',
+    ],
+    nutrition: { kcal: 210, protein: '12g', carbs: '14g', fat: '13g' },
+    rating: '4.9', reviews: 567, category: 'breakfast',
+  },
+  {
+    id: 3, emoji: '🍝', title: 'Aglio e Olio Pasta',
+    desc: 'Spaghetti in silky garlic-infused olive oil with a kick of chilli. Ready in 20 minutes.',
+    tags: ['dinner','quick','vegetarian'], diet: ['vegetarian','vegan'], time: 20, difficulty: 'easy',
+    ingredients: ['pasta','garlic','olive oil','chilli'],
+    ingredientList: [
+      { amount: '400g', name: 'Spaghetti' },
+      { amount: '8 cloves', name: 'Garlic' },
+      { amount: '6 tbsp', name: 'Extra-virgin olive oil' },
+      { amount: '1 tsp', name: 'Chilli flakes' },
+      { amount: 'large handful', name: 'Fresh parsley' },
+      { amount: 'to taste', name: 'Salt' },
+      { amount: 'to finish', name: 'Parmesan (optional)' },
+    ],
+    steps: [
+      'Cook spaghetti in heavily salted boiling water until al dente. Reserve 1 cup pasta water.',
+      'Thinly slice garlic. Warm olive oil in a large pan over low heat and gently cook garlic until golden, not brown.',
+      'Add chilli flakes; sizzle 30 seconds.',
+      'Add drained pasta and a splash of pasta water; toss vigorously to emulsify the sauce.',
+      'Finish with parsley and more pasta water if needed for silkiness.',
+      'Serve immediately with optional parmesan.',
+    ],
+    nutrition: { kcal: 480, protein: '13g', carbs: '68g', fat: '19g' },
+    rating: '4.7', reviews: 891, category: 'dinner',
+  },
+  {
+    id: 4, emoji: '🥗', title: 'Quinoa Buddha Bowl',
+    desc: 'A nourishing bowl of quinoa, roasted vegetables, avocado, and tahini dressing.',
+    tags: ['lunch','vegan','gluten-free'], diet: ['vegetarian','vegan','gluten-free'], time: 30, difficulty: 'easy',
+    ingredients: ['quinoa','avocado','chickpea','spinach'],
+    ingredientList: [
+      { amount: '1 cup', name: 'Quinoa' },
+      { amount: '1 can', name: 'Chickpeas (drained)' },
+      { amount: '1 large', name: 'Avocado' },
+      { amount: '2 cups', name: 'Baby spinach' },
+      { amount: '1', name: 'Sweet potato' },
+      { amount: '3 tbsp', name: 'Tahini' },
+      { amount: '1', name: 'Lemon' },
+      { amount: '1 tsp', name: 'Cumin' },
+    ],
+    steps: [
+      'Rinse quinoa and cook in 2 cups water for 15 min. Fluff with a fork.',
+      'Cube sweet potato; toss with oil and cumin. Roast at 200°C for 20 min.',
+      'Drain and rinse chickpeas. Season and roast for 15 min until crispy.',
+      'Whisk tahini with lemon juice, garlic, and water until smooth.',
+      'Assemble bowls: quinoa base, spinach, sweet potato, chickpeas, sliced avocado.',
+      'Drizzle tahini dressing generously and serve.',
+    ],
+    nutrition: { kcal: 520, protein: '18g', carbs: '58g', fat: '26g' },
+    rating: '4.6', reviews: 244, category: 'lunch',
+  },
+  {
+    id: 5, emoji: '🐟', title: 'Pan-Seared Salmon',
+    desc: 'Crispy-skinned salmon with a bright lemon-caper butter sauce. On the table in 15 minutes.',
+    tags: ['dinner','quick','gluten-free'], diet: ['gluten-free'], time: 15, difficulty: 'easy',
+    ingredients: ['salmon','lemon','butter','caper'],
+    ingredientList: [
+      { amount: '2 fillets', name: 'Salmon (skin on)' },
+      { amount: '3 tbsp', name: 'Butter' },
+      { amount: '1', name: 'Lemon' },
+      { amount: '2 tbsp', name: 'Capers' },
+      { amount: '2 cloves', name: 'Garlic' },
+      { amount: 'to taste', name: 'Salt & pepper' },
+      { amount: '1 tbsp', name: 'Olive oil' },
+    ],
+    steps: [
+      'Pat salmon dry. Season flesh side generously with salt and pepper.',
+      'Heat olive oil in a skillet over high heat. Place salmon skin-down; press gently for 30 seconds.',
+      'Cook 4 minutes until skin is crispy. Flip and cook 2 more minutes.',
+      'Remove salmon. Reduce heat to medium; add butter and garlic; cook 1 minute.',
+      'Add capers and lemon juice; swirl to combine into a pan sauce.',
+      'Plate salmon and spoon sauce over. Garnish with lemon slices.',
+    ],
+    nutrition: { kcal: 420, protein: '38g', carbs: '2g', fat: '29g' },
+    rating: '4.8', reviews: 430, category: 'dinner',
+  },
+  {
+    id: 6, emoji: '🍲', title: 'Creamy Tomato Soup',
+    desc: 'Velvety roasted tomato soup with basil and a swirl of cream. Soul-warming simplicity.',
+    tags: ['lunch','soup','vegetarian'], diet: ['vegetarian'], time: 45, difficulty: 'easy',
+    ingredients: ['tomato','onion','cream','basil'],
+    ingredientList: [
+      { amount: '1 kg', name: 'Ripe tomatoes' },
+      { amount: '1 large', name: 'Onion' },
+      { amount: '4 cloves', name: 'Garlic' },
+      { amount: '500 ml', name: 'Vegetable stock' },
+      { amount: '100 ml', name: 'Heavy cream' },
+      { amount: 'large handful', name: 'Fresh basil' },
+      { amount: '2 tbsp', name: 'Olive oil' },
+    ],
+    steps: [
+      'Halve tomatoes and onion. Place cut-side up on a baking tray with garlic.',
+      'Drizzle with olive oil and roast at 200°C for 35 minutes until caramelised.',
+      'Transfer all roasted vegetables to a pot. Add stock and basil.',
+      'Blend until silky smooth using an immersion blender.',
+      'Stir in cream; gently reheat over low heat. Season to taste.',
+      'Serve with a drizzle of cream and fresh basil. Great with crusty sourdough.',
+    ],
+    nutrition: { kcal: 180, protein: '4g', carbs: '16g', fat: '12g' },
+    rating: '4.7', reviews: 318, category: 'soup',
+  },
+  {
+    id: 7, emoji: '🥞', title: 'Fluffy Buttermilk Pancakes',
+    desc: 'Extra-thick, cloud-soft pancakes with a golden crust. The perfect weekend breakfast.',
+    tags: ['breakfast','vegetarian'], diet: ['vegetarian'], time: 20, difficulty: 'easy',
+    ingredients: ['flour','egg','buttermilk','butter'],
+    ingredientList: [
+      { amount: '1.5 cups', name: 'All-purpose flour' },
+      { amount: '2', name: 'Eggs' },
+      { amount: '1 cup', name: 'Buttermilk' },
+      { amount: '2 tbsp', name: 'Butter (melted)' },
+      { amount: '2 tbsp', name: 'Sugar' },
+      { amount: '1 tsp', name: 'Baking powder' },
+      { amount: '0.5 tsp', name: 'Baking soda' },
+      { amount: 'pinch', name: 'Salt' },
+    ],
+    steps: [
+      'Whisk together flour, sugar, baking powder, baking soda, and salt.',
+      'In a separate bowl, whisk eggs, buttermilk, and melted butter.',
+      'Fold wet into dry ingredients until just combined — lumps are fine!',
+      'Heat a non-stick pan over medium heat; lightly butter.',
+      'Pour ¼ cup batter per pancake. Cook until bubbles form; flip and cook 1 more minute.',
+      'Serve stacked with maple syrup, fresh berries, and extra butter.',
+    ],
+    nutrition: { kcal: 310, protein: '9g', carbs: '42g', fat: '12g' },
+    rating: '4.9', reviews: 702, category: 'breakfast',
+  },
+  {
+    id: 8, emoji: '🍰', title: 'Chocolate Lava Cake',
+    desc: 'Warm dark chocolate cakes with a gooey molten centre. Decadent in just 12 minutes.',
+    tags: ['dessert'], diet: [], time: 25, difficulty: 'medium',
+    ingredients: ['chocolate','butter','egg','flour','sugar'],
+    ingredientList: [
+      { amount: '200g', name: 'Dark chocolate (70%)' },
+      { amount: '120g', name: 'Butter' },
+      { amount: '4', name: 'Eggs' },
+      { amount: '4', name: 'Egg yolks' },
+      { amount: '180g', name: 'Icing sugar' },
+      { amount: '60g', name: 'All-purpose flour' },
+      { amount: 'for dusting', name: 'Cocoa powder' },
+    ],
+    steps: [
+      'Preheat oven to 220°C. Butter 6 ramekins and dust with cocoa powder.',
+      'Melt chocolate and butter together in a bowl over hot water; stir smooth.',
+      'Whisk eggs, yolks, and sugar until pale. Fold into chocolate.',
+      'Sift in flour and fold until just combined.',
+      'Fill ramekins ¾ full. Refrigerate until ready (up to 24 hours).',
+      'Bake 10–12 minutes — edges set, centre should wobble. Invert onto plates and serve immediately with vanilla ice cream.',
+    ],
+    nutrition: { kcal: 560, protein: '9g', carbs: '52g', fat: '36g' },
+    rating: '4.9', reviews: 985, category: 'dessert',
+  },
+  {
+    id: 9, emoji: '🌯', title: 'Chicken Caesar Wrap',
+    desc: 'Grilled chicken, crisp romaine, shaved parmesan, and caesar dressing in a toasted tortilla.',
+    tags: ['lunch','quick'], diet: [], time: 15, difficulty: 'easy',
+    ingredients: ['chicken','lettuce','parmesan','lemon'],
+    ingredientList: [
+      { amount: '2 breasts', name: 'Grilled chicken' },
+      { amount: '2 large', name: 'Flour tortillas' },
+      { amount: '2 cups', name: 'Romaine lettuce' },
+      { amount: '40g', name: 'Parmesan (shaved)' },
+      { amount: '4 tbsp', name: 'Caesar dressing' },
+      { amount: '0.5', name: 'Lemon' },
+      { amount: 'to taste', name: 'Black pepper' },
+    ],
+    steps: [
+      'Slice grilled chicken into strips and season with lemon juice and pepper.',
+      'Warm tortillas in a dry pan for 30 seconds each side.',
+      'Lay lettuce down the centre of each tortilla.',
+      'Top with chicken, parmesan, and a generous drizzle of caesar dressing.',
+      'Fold sides in and roll tightly. Cut diagonally and serve.',
+    ],
+    nutrition: { kcal: 520, protein: '36g', carbs: '38g', fat: '22g' },
+    rating: '4.5', reviews: 198, category: 'lunch',
+  },
+  {
+    id: 10, emoji: '🍜', title: 'Miso Ramen Bowl',
+    desc: 'Rich miso broth with noodles, soft-boiled egg, nori, and crunchy sesame toppings.',
+    tags: ['dinner','soup'], diet: [], time: 35, difficulty: 'medium',
+    ingredients: ['noodle','egg','miso','mushroom'],
+    ingredientList: [
+      { amount: '2 portions', name: 'Ramen noodles' },
+      { amount: '4 tbsp', name: 'White miso paste' },
+      { amount: '1 litre', name: 'Chicken or veg stock' },
+      { amount: '2', name: 'Eggs' },
+      { amount: '200g', name: 'Shiitake mushrooms' },
+      { amount: '2', name: 'Spring onions' },
+      { amount: '2 sheets', name: 'Nori' },
+      { amount: '1 tbsp', name: 'Sesame oil' },
+    ],
+    steps: [
+      'Soft-boil eggs: simmer 7 minutes, then transfer to ice water. Peel and halve.',
+      'Sauté mushrooms in sesame oil until golden, about 5 minutes.',
+      'Bring stock to a gentle simmer. Whisk in miso until fully dissolved.',
+      'Cook noodles per package instructions; drain and divide into bowls.',
+      'Ladle miso broth over noodles.',
+      'Top with mushrooms, halved eggs, sliced spring onions, and nori. Serve hot.',
+    ],
+    nutrition: { kcal: 440, protein: '22g', carbs: '56g', fat: '14g' },
+    rating: '4.8', reviews: 621, category: 'dinner',
+  },
+  {
+    id: 11, emoji: '🥜', title: 'Peanut Butter Energy Balls',
+    desc: 'No-bake oat balls with peanut butter, honey, and dark chocolate chips — ideal snack.',
+    tags: ['snack','quick','vegetarian'], diet: ['vegetarian'], time: 10, difficulty: 'easy',
+    ingredients: ['oat','peanut butter','honey','chocolate'],
+    ingredientList: [
+      { amount: '1 cup', name: 'Rolled oats' },
+      { amount: '0.5 cup', name: 'Peanut butter' },
+      { amount: '3 tbsp', name: 'Honey' },
+      { amount: '0.25 cup', name: 'Dark chocolate chips' },
+      { amount: '2 tbsp', name: 'Chia seeds' },
+      { amount: '1 tsp', name: 'Vanilla extract' },
+    ],
+    steps: [
+      'Combine all ingredients in a large bowl. Mix well with a spatula or hands.',
+      'Refrigerate the mixture for 30 minutes until firm enough to roll.',
+      'Roll into 12–14 balls (about 1.5 tbsp each).',
+      'Store in an airtight container in the fridge for up to one week.',
+    ],
+    nutrition: { kcal: 140, protein: '5g', carbs: '16g', fat: '7g' },
+    rating: '4.6', reviews: 354, category: 'snack',
+  },
+  {
+    id: 12, emoji: '🥕', title: 'Carrot Ginger Soup',
+    desc: 'Warming, velvety soup with roasted carrots and fresh ginger. Vegan and gluten-free.',
+    tags: ['soup','vegan','gluten-free'], diet: ['vegetarian','vegan','gluten-free'], time: 40, difficulty: 'easy',
+    ingredients: ['carrot','ginger','onion','coconut milk'],
+    ingredientList: [
+      { amount: '700g', name: 'Carrots' },
+      { amount: '30g', name: 'Fresh ginger' },
+      { amount: '1', name: 'Onion' },
+      { amount: '400ml', name: 'Coconut milk' },
+      { amount: '500ml', name: 'Vegetable stock' },
+      { amount: '2 cloves', name: 'Garlic' },
+      { amount: '1 tsp', name: 'Turmeric' },
+      { amount: '1 tbsp', name: 'Olive oil' },
+    ],
+    steps: [
+      'Peel and roughly chop carrots. Toss with oil; roast at 200°C for 25 min.',
+      'Sauté onion and garlic in a pot over medium heat until softened.',
+      'Add ginger and turmeric; cook 1 minute.',
+      'Add roasted carrots and stock. Simmer 10 minutes.',
+      'Blend until silky. Stir in coconut milk and season to taste.',
+      'Serve with a drizzle of coconut milk and toasted pumpkin seeds.',
+    ],
+    nutrition: { kcal: 190, protein: '3g', carbs: '22g', fat: '11g' },
+    rating: '4.7', reviews: 276, category: 'soup',
+  },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────
+let currentQuery = '';
+let currentCat = 'all';
+let savedIds = JSON.parse(localStorage.getItem('savedRecipes') || '[]');
+
+// ── RENDER HELPERS ────────────────────────────────────────────────
+function getFilteredRecipes() {
+  const diet = document.getElementById('dietFilter').value;
+  const time = parseInt(document.getElementById('timeFilter').value) || Infinity;
+  const diff = document.getElementById('diffFilter').value;
+
+  return RECIPES.filter(r => {
+    const matchQ = !currentQuery ||
+      r.title.toLowerCase().includes(currentQuery) ||
+      r.ingredients.some(i => i.includes(currentQuery)) ||
+      r.tags.some(t => t.includes(currentQuery)) ||
+      r.desc.toLowerCase().includes(currentQuery);
+    const matchCat = currentCat === 'all' || r.category === currentCat || r.tags.includes(currentCat);
+    const matchDiet = !diet || r.diet.includes(diet);
+    const matchTime = r.time <= time;
+    const matchDiff = !diff || r.difficulty === diff;
+    return matchQ && matchCat && matchDiet && matchTime && matchDiff;
+  });
+}
+
+function renderGrid() {
+  const results = getFilteredRecipes();
+  const grid = document.getElementById('recipeGrid');
+  const noRes = document.getElementById('noResults');
+  const count = document.getElementById('resultsCount');
+
+  count.textContent = `${results.length} recipe${results.length !== 1 ? 's' : ''}`;
+
+  if (!results.length) {
+    grid.innerHTML = '';
+    noRes.style.display = 'block';
+    return;
+  }
+  noRes.style.display = 'none';
+
+  grid.innerHTML = results.map((r, i) => `
+    <div class="recipe-card" style="animation-delay:${i*0.07}s" onclick="openRecipe(${r.id})">
+      <div class="card-img">${r.emoji}</div>
+      <div class="card-body">
+        <div class="card-tags">
+          ${r.diet.includes('vegetarian') ? '<span class="card-tag veg">Veg</span>' : ''}
+          ${r.time <= 20 ? '<span class="card-tag quick">Quick</span>' : ''}
+          ${r.tags.includes('spicy') ? '<span class="card-tag spicy">Spicy</span>' : ''}
+          ${r.tags.includes('gluten-free') || r.diet.includes('gluten-free') ? '<span class="card-tag">GF</span>' : ''}
+        </div>
+        <div class="card-title">${r.title}</div>
+        <div class="card-desc">${r.desc}</div>
+        <div class="card-meta">
+          <span>⏱ ${r.time} min</span>
+          <span>📊 ${r.difficulty}</span>
+          <span>⭐ ${r.rating}</span>
+          <span style="margin-left:auto;cursor:pointer;font-size:1.1rem" onclick="event.stopPropagation();toggleSave(${r.id},this)">${savedIds.includes(r.id) ? '❤️' : '🤍'}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function handleSearch() {
+  currentQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+  document.getElementById('sectionHeading').textContent = currentQuery
+    ? `Results for "${currentQuery}"`
+    : 'Featured Recipes';
+  renderGrid();
+}
+
+function quickSearch(el, term) {
+  document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('selected'));
+  const inp = document.getElementById('searchInput');
+  if (currentQuery === term) {
+    inp.value = '';
+    currentQuery = '';
+    el.classList.remove('selected');
+    document.getElementById('sectionHeading').textContent = 'Featured Recipes';
+  } else {
+    inp.value = term;
+    currentQuery = term;
+    el.classList.add('selected');
+    document.getElementById('sectionHeading').textContent = `Results for "${term}"`;
+  }
+  renderGrid();
+}
+
+function filterCat(el, cat) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  currentCat = cat;
+  renderGrid();
+}
+
+function applyFilters() { renderGrid(); }
+
+function toggleSave(id, btn) {
+  if (savedIds.includes(id)) {
+    savedIds = savedIds.filter(x => x !== id);
+    btn.textContent = '🤍';
+  } else {
+    savedIds.push(id);
+    btn.textContent = '❤️';
+  }
+  localStorage.setItem('savedRecipes', JSON.stringify(savedIds));
+}
+
+// ── RECIPE DETAIL ─────────────────────────────────────────────────
+function openRecipe(id) {
+  const r = RECIPES.find(x => x.id === id);
+  if (!r) return;
+
+  document.getElementById('detailEmojiBg').textContent = r.emoji;
+  document.getElementById('detailTitle').textContent = r.title;
+  document.getElementById('detailDesc').textContent = r.desc;
+
+  document.getElementById('detailTags').innerHTML = r.tags.map(t =>
+    `<span class="detail-tag">${t}</span>`).join('');
+
+  document.getElementById('detailMeta').innerHTML = `
+    <span>⏱ ${r.time} min</span>
+    <span>📊 ${r.difficulty[0].toUpperCase()+r.difficulty.slice(1)}</span>
+    <span>⭐ ${r.rating} (${r.reviews} reviews)</span>
+  `;
+
+  document.getElementById('detailIngredients').innerHTML = r.ingredientList.map(i => `
+    <li><div class="ing-dot"></div><span class="ing-amount">${i.amount}</span>&nbsp;${i.name}</li>
+  `).join('');
+
+  document.getElementById('detailSteps').innerHTML = r.steps.map((s, i) => `
+    <li class="step-item" style="animation-delay:${i*0.08}s">
+      <div class="step-num">${i+1}</div>
+      <div class="step-text">${s}</div>
+    </li>
+  `).join('');
+
+  const n = r.nutrition;
+  document.getElementById('detailNutrition').innerHTML = `
+    <div class="nut-item"><div class="nut-val">${n.kcal}</div><div class="nut-label">Calories</div></div>
+    <div class="nut-item"><div class="nut-val">${n.protein}</div><div class="nut-label">Protein</div></div>
+    <div class="nut-item"><div class="nut-val">${n.carbs}</div><div class="nut-label">Carbs</div></div>
+    <div class="nut-item"><div class="nut-val">${n.fat}</div><div class="nut-label">Fat</div></div>
+  `;
+
+  showPage('detail');
+  window.scrollTo(0,0);
+}
+
+// ── SAVED PAGE ────────────────────────────────────────────────────
+function showSaved() {
+  // Filter to saved and show on home page with saved label
+  document.getElementById('sectionHeading').textContent = savedIds.length
+    ? '❤️ Your Saved Recipes'
+    : '❤️ No saved recipes yet';
+  const grid = document.getElementById('recipeGrid');
+  const noRes = document.getElementById('noResults');
+  const count = document.getElementById('resultsCount');
+
+  const results = RECIPES.filter(r => savedIds.includes(r.id));
+  count.textContent = `${results.length} saved`;
+
+  if (!results.length) {
+    grid.innerHTML = '';
+    noRes.innerHTML = `<div class="emoji">🤍</div><h3>No saved recipes</h3><p>Tap the heart on any recipe to save it</p>`;
+    noRes.style.display = 'block';
+  } else {
+    noRes.style.display = 'none';
+    grid.innerHTML = results.map((r,i) => `
+      <div class="recipe-card" style="animation-delay:${i*0.07}s" onclick="openRecipe(${r.id})">
+        <div class="card-img">${r.emoji}</div>
+        <div class="card-body">
+          <div class="card-tags">
+            ${r.diet.includes('vegetarian') ? '<span class="card-tag veg">Veg</span>' : ''}
+            ${r.time <= 20 ? '<span class="card-tag quick">Quick</span>' : ''}
+          </div>
+          <div class="card-title">${r.title}</div>
+          <div class="card-desc">${r.desc}</div>
+          <div class="card-meta">
+            <span>⏱ ${r.time} min</span><span>📊 ${r.difficulty}</span><span>⭐ ${r.rating}</span>
+            <span style="margin-left:auto;cursor:pointer;font-size:1.1rem" onclick="event.stopPropagation();toggleSave(${r.id},this)">❤️</span>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  showPage('home');
+  document.getElementById('nav-saved').classList.add('active');
+  document.getElementById('nav-home').classList.remove('active');
+}
+
+// ── PAGE ROUTER ───────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.getElementById('nav-home').classList.toggle('active', name === 'home');
+  document.getElementById('nav-saved').classList.remove('active');
+  if (name === 'home') {
+    document.getElementById('sectionHeading').textContent = currentQuery
+      ? `Results for "${currentQuery}"`
+      : 'Featured Recipes';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>
