@@ -23,4 +23,10 @@ Back button returns to your last search
 12 recipes are included across all categories — from Shakshuka and Ramen to Chocolate Lava Cake and Buddha Bowls.
 
 all templates icons and designs were taken from free to use canva designs and free Figma templates.
+
+
+ (Progress and code building process)
+
+ Day 1: Project for End of semester is due on the 31st of May and today we have come up with the designs and a basic road map and deided the work load. Faaris will work on the Custom recepie Maker page, Eshal will work on the main home page for browseing and searching recepies and Fatima is on the recepie display page which will be used to display all the different recepies.
+
  
