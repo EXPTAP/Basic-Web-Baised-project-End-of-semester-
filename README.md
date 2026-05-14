@@ -8,7 +8,9 @@ Quick-tag chips one-click searches for popular ingredients
 Category pills browse by Breakfast, Lunch, Dinner, Dessert, Snacks, Soups
 Filter dropdowns filter by diet (Vegetarian / Vegan / Gluten-Free), cook time, and difficulty
 Live result count updates as you filter
+
 Add custom recepies to contribute to the website
+The custom recepies options allows users to add and share their own recepies with full support to allow the user to give full details on the ingredients, nutrition and instructions reletive to their uploaded recepie
 
 Recipe Cards show cook time, difficulty, star rating, and a save button, saved recipes persist across sessions via localStorage.
 Recipe Detail Page
