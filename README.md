@@ -29,4 +29,4 @@ all templates icons and designs were taken from free to use canva designs and fr
 
  Day 1: Project for End of semester is due on the 31st of May and today we have come up with the designs and a basic road map and deided the work load. Faaris will work on the Custom recepie Maker page, Eshal will work on the main home page for browseing and searching recepies and Fatima is on the recepie display page which will be used to display all the different recepies.
 
- 
+Day 2: Eshal had finished work on the main page yesterday and had uploaded it so today Faaris finished integrateing the recepie finder in to the website. so far the only functionality of the page are the switching to and from the recepie adder and recepie finder page but furthur integrations will be done once all the pages are complete and integrated.
