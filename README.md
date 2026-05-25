@@ -24,3 +24,5 @@ Recipe Detail Page
 Day 2: Eshal had finished work on the main page yesterday and had uploaded it so today Faaris finished integrateing the recepie finder in to the website. so far the only functionality of the page are the switching to and from the recepie adder and recepie finder page but furthur integrations will be done once all the pages are complete and integrated.
 
 Day 3: Today the Template for the recepie display page was completed so we started working on integrate ing it into the website and adding the ability to store the uploaded recepies localy to the host so they can be viewed globaly. we did this with the help of the "Localstoreage.getitem()" and "Localstoreage.setitem()" functions in JS along with basic Array filtering useing ".Filter()". while storeing them useing the "JSON.Strinify()" function.
+
+Day 4: Today the website is finished by clearing up some of the code and finnaly adding the search and display recepies feature to the webpage furthur updates might come but this is the first release.
