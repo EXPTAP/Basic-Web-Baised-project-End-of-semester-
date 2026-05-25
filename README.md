@@ -1,21 +1,5 @@
 # Basic-Web-Baised-project-End-of-semester-
-A recipie finder website to make it easier to find delicious meals
-What's included:
-Main Page
-
-Search bar — searches by ingredient, title, or tag
-Quick-tag chips one-click searches for popular ingredients
-Category pills browse by Breakfast, Lunch, Dinner, Dessert, Snacks, Soups
-
-Add custom recepies to contribute to the website
-The custom recepies options allows users to add and share their own recepies with full support to allow the user to give full details on the ingredients, nutrition and instructions reletive to their uploaded recepie
-
-Recipe Cards show cook time, difficulty, star rating, and a save button, saved recipes persist across sessions via localStorage.
-Recipe Detail Page
-
-
-*All templates icons and designs were taken from free to use canva designs and free Figma templates.*
-
+A recipie shareing website to make it easier to create and share recipes.
 
  (Progress and code building process)
 
