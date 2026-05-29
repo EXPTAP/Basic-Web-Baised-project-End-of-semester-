@@ -3,6 +3,8 @@ A recipie shareing website to make it easier to create and share recipes.
 
 You can find the website here : http://recipe-organizer.getenjoyment.net
 
+By Faaris, Eshal and Fatima of Air University BSBIT-1
+
  (Progress and code building process)
 
  Day 1: Project for End of semester is due on the 31st of May and today we have come up with the designs and a basic road map and deided the work load. Faaris will work on the Custom recepie Maker page, Eshal will work on the main home page for browseing and searching recepies and Fatima is on the recepie display page which will be used to display all the different recepies.
